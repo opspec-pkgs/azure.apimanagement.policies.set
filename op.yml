@@ -1,5 +1,5 @@
-name: github.com/opspec-pkgs/azure.apimanagement.policy.set
-description: sets an azure api management policy
+name: github.com/opspec-pkgs/azure.apimanagement.globalpolicy.set
+description: sets an azure api management global policy
 inputs:
   subscriptionId:
     string:
@@ -41,7 +41,7 @@ inputs:
 version: 1.0.0
 run:
   container:
-    image: { ref: 'opspecpkgs/azure.apimanagement.policy.set:1.0.0' }
+    image: { ref: 'opspecpkgs/azure.apimanagement.globalpolicy.set:1.0.0' }
     cmd: [node, /index.js]
     files: { /index.js, /policy.xml: policyFile }
     envVars:
