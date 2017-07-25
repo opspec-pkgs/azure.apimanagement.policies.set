@@ -1,0 +1,55 @@
+name: github.com/opspec-pkgs/azure.apimanagement.policy.set
+description: sets an azure api management policy
+inputs:
+  subscriptionId:
+    string:
+      constraints: { minLength: 1 }
+      description: id of azure subscription
+  loginId:
+    string:
+      constraints: { minLength: 1 }
+      description: id of user, service principal, or app to login with
+  loginSecret:
+    string:
+      constraints: { minLength: 1 }
+      description: secret of user, service principal, or app to login with
+      isSecret: true
+  loginTenantId:
+    string:
+      constraints: { minLength: 1 }
+      description: tenant id of user, service principal, or app to login with
+  resourceGroup:
+    string:
+      constraints: { minLength: 1 }
+      description: name of azure resource group
+  apiManagementServiceName:
+    string:
+      constraints: { minLength: 1 }
+      description: name of the api management service
+  policyId:
+    string:
+      constraints: { minLength: 1 }
+      description: the identifier of the policy
+  policyFile:
+    file:
+      description: full file path to policy xml 
+  loginType:
+    string:
+      constraints: { enum: [user, sp]}
+      description: type of login; 'user' (default) or 'sp' for service principal
+      default: user
+version: 1.0.0
+run:
+  container:
+    image: { ref: 'opspecpkgs/azure.apimanagement.policy.set:1.0.0' }
+    cmd: [node, /index.js]
+    files: { /index.js, /policy.xml: policyFile }
+    envVars:
+      subscriptionId:
+      loginId:
+      loginSecret:
+      loginTenantId:
+      resourceGroup:
+      apiManagementServiceName:
+      policyId:
+      loginType:
