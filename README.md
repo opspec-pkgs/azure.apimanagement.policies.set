@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/opspec-pkgs/azure.apimanagement.globalpolicy.set.svg?branch=master)](https://travis-ci.org/opspec-pkgs/azure.apimanagement.globalpolicy.set)
+[![Build Status](https://travis-ci.org/opspec-pkgs/azure.apimanagement.policy.set.svg?branch=master)](https://travis-ci.org/opspec-pkgs/azure.apimanagement.policy.set)
 
 # Problem statement
 
@@ -7,25 +7,25 @@ sets an azure api management global policy
 # Example usage
 
 > note: in examples, VERSION represents a version of the
-> azure.apimanagement.globalpolicy.set pkg
+> azure.apimanagement.policy.set pkg
 
 ## install
 
 ```shell
-opctl pkg install github.com/opspec-pkgs/azure.apimanagement.globalpolicy.set#VERSION
+opctl pkg install github.com/opspec-pkgs/azure.apimanagement.policy.set#VERSION
 ```
 
 ## run
 
 ```
-opctl run github.com/opspec-pkgs/azure.apimanagement.globalpolicy.set#VERSION
+opctl run github.com/opspec-pkgs/azure.apimanagement.policy.set#VERSION
 ```
 
 ## compose
 
 ```yaml
 op:
-  pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.globalpolicy.set#VERSION }
+  pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.policy.set#VERSION }
   inputs:
     subscriptionId:
     loginId:
@@ -44,7 +44,7 @@ op:
 join us on
 [![Slack](https://opspec-slackin.herokuapp.com/badge.svg)](https://opspec-slackin.herokuapp.com/)
 or
-[open an issue](https://github.com/opspec-pkgs/azure.apimanagement.globalpolicy.set/issues)
+[open an issue](https://github.com/opspec-pkgs/azure.apimanagement.policy.set/issues)
 
 # Releases
 
