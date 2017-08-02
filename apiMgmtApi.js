@@ -2,14 +2,14 @@ const msRestAzure = require('ms-rest-azure');
 const {URL} = require('url');
 
 class ApiMgmtApi {
-    async setPolicy(credentials, apiId, policyContent) {
+    async setPolicy(credentials, apiRef, policyContent) {
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
             `resourceGroups/${process.env.resourceGroup}/` +
             'providers/Microsoft.ApiManagement/' +
             `service/${process.env.apiManagementServiceName}/` +
-            `apis/${apiId}/` +
+            `apis/${apiRef.id}/` +
             `policies/policy` +
             '?api-version=2017-03-01');
 
@@ -28,9 +28,9 @@ class ApiMgmtApi {
         const result = await azureServiceClient.sendRequest(options);
 
         if (result.error) {
-            throw new Error(`error setting policy for apiId: '${apiId}'; error was: ${JSON.stringify(result.error)}`);
+            throw new Error(`error setting policy for api '${apiRef.name}'; error was: ${JSON.stringify(result.error)}`);
         }
-        console.log(`set policy for apiId: '${apiId}' successfully`);
+        console.log(`set policy for api '${apiRef.name}' successfully`);
     };
 
 

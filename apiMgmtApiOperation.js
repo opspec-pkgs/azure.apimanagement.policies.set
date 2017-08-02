@@ -2,15 +2,15 @@ const msRestAzure = require('ms-rest-azure');
 const {URL} = require('url');
 
 class ApiMgmtApiOperation {
-    async setPolicy(credentials, apiId, operationId, policyContent) {
+    async setPolicy(credentials, apiRef, operationRef, policyContent) {
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
             `resourceGroups/${process.env.resourceGroup}/` +
             'providers/Microsoft.ApiManagement/' +
             `service/${process.env.apiManagementServiceName}/` +
-            `apis/${apiId}/` +
-            `operations/${operationId}/` +
+            `apis/${apiRef.id}/` +
+            `operations/${operationRef.id}/` +
             `policies/policy` +
             '?api-version=2017-03-01');
 
@@ -29,19 +29,19 @@ class ApiMgmtApiOperation {
         const result = await azureServiceClient.sendRequest(options);
 
         if (result.error) {
-            throw new Error(`error setting policy for apiId: '${apiId}', operationId: '${operationId}'; error was: ${JSON.stringify(result.error)}`);
+            throw new Error(`error setting policy for operation '${operationRef.name}' of api '${apiRef.name}'; error was: ${JSON.stringify(result.error)}`);
         }
-        console.log(`set policy for apiId: '${apiId}', operationId: '${operationId}' successfully`);
+        console.log(`set policy for operation '${operationRef.name}' of api '${apiRef.name}' successfully`);
     };
 
-    async getIdByName(credentials, apiId, operationName){
+    async getIdByName(credentials, apiRef, operationName){
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
             `resourceGroups/${process.env.resourceGroup}/` +
             'providers/Microsoft.ApiManagement/' +
             `service/${process.env.apiManagementServiceName}/` +
-            `apis/${apiId}/` +
+            `apis/${apiRef.id}/` +
             `operations` +
             '?api-version=2017-03-01');
 
@@ -68,7 +68,7 @@ class ApiMgmtApiOperation {
         }
 
         if (!operationId){
-            throw new Error(`no API Operation found w/ API Id: '${apiId}', displayName: '${operationName}'`);
+            throw new Error(`no operation found w/ displayName: '${operationName}' in api '${apiRef.name}'`);
         }
 
         return operationId;

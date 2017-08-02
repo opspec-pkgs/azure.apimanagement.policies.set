@@ -21,7 +21,7 @@ const login = async () => {
         response = await msRestAzure.loginWithServicePrincipalSecret(loginId, loginSecret, process.env.loginTenantId);
     } else {
         // https://github.com/Azure/azure-sdk-for-node/blob/66a255dd882762e93e5b9b92ba63ebb222962d59/runtime/ms-rest-azure/index.d.ts#L376
-        response = await msRestAzure.loginWithUsernamePassword(loginId, loginSecret, { domain: process.env.loginTenantId });
+        response = await msRestAzure.loginWithUsernamePassword(loginId, loginSecret, {domain: process.env.loginTenantId});
     }
 
     console.log('login successful');
@@ -32,17 +32,27 @@ const login = async () => {
 /**
  * Processes a /policies/apis/{api-name}/{operation-name} dir
  * @param credentials
- * @param apiId
+ * @param {Object} apiRef
  * @param dirPath
  * @returns {Promise.<*>}
  */
-const processApiOperationDir = async (credentials, apiId, dirPath) => {
+const processApiOperationDir = async (credentials, apiRef, dirPath) => {
     const policyAbsPath = `${dirPath}/${POLICY_FILENAME}`;
     if (fs.existsSync(policyAbsPath)) {
+        const operationName = path.basename(dirPath);
+
         return apiMgmtApiOperation
-            .getIdByName(credentials, apiId, path.basename(dirPath))
+            .getIdByName(credentials, apiRef, operationName)
             .then(operationId =>
-                apiMgmtApiOperation.setPolicy(credentials, apiId, operationId, fs.readFileSync(policyAbsPath, 'utf8'))
+                apiMgmtApiOperation.setPolicy(
+                    credentials,
+                    apiRef,
+                    {
+                        id: operationId,
+                        name: operationName,
+                    },
+                    fs.readFileSync(policyAbsPath, 'utf8')
+                )
             );
     }
     return Promise.resolve();
@@ -59,8 +69,12 @@ const processApiDir = async (credentials, dirPath) => {
 
     const items = fs.readdirSync(dirPath);
 
-    if (items.length > 0 ){
-        const apiId = await apiMgmtApi.getIdByName(credentials, path.basename(dirPath));
+    if (items.length > 0) {
+        const apiName = path.basename(dirPath);
+        const apiRef = {
+            id: await apiMgmtApi.getIdByName(credentials, apiName),
+            name: apiName,
+        };
 
         items.forEach(item => {
             const itemAbsPath = `${dirPath}/${item}`;
@@ -68,11 +82,19 @@ const processApiDir = async (credentials, dirPath) => {
 
             if (itemStat.isDirectory()) {
                 promises.push(
-                    processApiOperationDir(credentials, apiId, itemAbsPath)
+                    processApiOperationDir(
+                        credentials,
+                        apiRef,
+                        itemAbsPath
+                    )
                 );
             } else if (item === POLICY_FILENAME) {
                 promises.push(
-                    apiMgmtApi.setPolicy(credentials, apiId, fs.readFileSync(itemAbsPath, 'utf8'))
+                    apiMgmtApi.setPolicy(
+                        credentials,
+                        apiRef,
+                        fs.readFileSync(itemAbsPath, 'utf8')
+                    )
                 );
             }
         });
@@ -110,11 +132,21 @@ const processApisDir = async (credentials, dirPath) => {
  */
 const processProductDir = async (credentials, dirPath) => {
     const policyAbsPath = `${dirPath}/${POLICY_FILENAME}`;
+
     if (fs.existsSync(policyAbsPath)) {
+        const productName = path.basename(dirPath);
+
         return apiMgmtProduct
-            .getIdByName(credentials, path.basename(dirPath))
+            .getIdByName(credentials, productName)
             .then(apiId =>
-                apiMgmtProduct.setPolicy(credentials, apiId, fs.readFileSync(policyAbsPath, 'utf8'))
+                apiMgmtProduct.setPolicy(
+                    credentials,
+                    {
+                        id: apiId,
+                        name: productName,
+                    },
+                    fs.readFileSync(policyAbsPath, 'utf8')
+                )
             );
     }
     return Promise.resolve();
@@ -160,7 +192,7 @@ const setPolicies = async (credentials) => {
                 promises.push(processProductsDir(credentials, itemAbsPath));
                 break;
             case POLICY_FILENAME:
-                promises.push(apiMgmt.setPolicy(fs.readFileSync(itemAbsPath, 'utf8')));
+                promises.push(apiMgmt.setPolicy(credentials, fs.readFileSync(itemAbsPath, 'utf8')));
                 break;
         }
     });
