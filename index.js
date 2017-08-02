@@ -1,7 +1,12 @@
 const msRestAzure = require('ms-rest-azure');
-const { URL } = require('url');
 const fs = require('fs');
-let createOrUpdateAttempts = 0;
+const apiMgmt = require('./apiMgmt');
+const apiMgmtApi = require('./apiMgmtApi');
+const apiMgmtApiOperation = require('./apiMgmtApiOperation');
+const apiMgmtProduct = require('./apiMgmtProduct');
+const path = require('path');
+
+const POLICY_FILENAME = 'policy.xml';
 
 const login = async () => {
     console.log('logging in');
@@ -16,7 +21,7 @@ const login = async () => {
         response = await msRestAzure.loginWithServicePrincipalSecret(loginId, loginSecret, process.env.loginTenantId);
     } else {
         // https://github.com/Azure/azure-sdk-for-node/blob/66a255dd882762e93e5b9b92ba63ebb222962d59/runtime/ms-rest-azure/index.d.ts#L376
-        response = await msRestAzure.loginWithUsernamePassword(loginId, loginSecret, {domain: process.env.loginTenantId});
+        response = await msRestAzure.loginWithUsernamePassword(loginId, loginSecret, { domain: process.env.loginTenantId });
     }
 
     console.log('login successful');
@@ -24,76 +29,147 @@ const login = async () => {
     return response;
 };
 
-const registerProvider = async (credentials) => {
-    console.log('registering resource provider Microsoft.ApiManagement');
-
-    const url = new URL(
-        'https://management.azure.com/' +
-        `subscriptions/${process.env.subscriptionId}/` +
-        'providers/Microsoft.ApiManagement/register' +
-        '?api-version=2017-03-01');
-
-    // see https://github.com/Azure/azure-sdk-for-node/tree/bf6473eae7faca1ca1cf1375ee53c6fc214ca1b1/runtime/ms-rest-azure#using-the-generic-authenticated-azureserviceclient-to-make-custom-requests-to-azure
-    const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
-
-    let options = {
-        method: 'POST',
-        url: url.href
-    };
-
-    const result = await azureServiceClient.sendRequest(options);
-
-    if (result.error){
-        throw new Error(JSON.stringify(result.error));
+/**
+ * Processes a /policies/apis/{api-name}/{operation-name} dir
+ * @param credentials
+ * @param apiId
+ * @param dirPath
+ * @returns {Promise.<*>}
+ */
+const processApiOperationDir = async (credentials, apiId, dirPath) => {
+    const policyAbsPath = `${dirPath}/${POLICY_FILENAME}`;
+    if (fs.existsSync(policyAbsPath)) {
+        return apiMgmtApiOperation
+            .getIdByName(credentials, apiId, path.basename(dirPath))
+            .then(operationId =>
+                apiMgmtApiOperation.setPolicy(credentials, apiId, operationId, fs.readFileSync(policyAbsPath, 'utf8'))
+            );
     }
-
-    console.log('registering resource provider Microsoft.ApiManagement successful');
+    return Promise.resolve();
 };
 
-const createOrUpdate = async (credentials) => {
-    createOrUpdateAttempts++;
+/**
+ * Processes a /policies/apis/{api-name} dir
+ * @param credentials
+ * @param dirPath
+ * @returns {Promise.<*>}
+ */
+const processApiDir = async (credentials, dirPath) => {
+    const promises = [];
 
-    console.log('create/update api management policy');
+    const items = fs.readdirSync(dirPath);
 
-    const url = new URL(
-        'https://management.azure.com/' +
-        `subscriptions/${process.env.subscriptionId}/` +
-        `resourceGroups/${process.env.resourceGroup}/` +
-        'providers/Microsoft.ApiManagement/' +
-        `service/${process.env.apiManagementServiceName}/` +
-        `policies/${process.env.policyId}` +
-        '?api-version=2017-03-01');
+    if (items.length > 0 ){
+        const apiId = await apiMgmtApi.getIdByName(credentials, path.basename(dirPath));
 
-    // see https://github.com/Azure/azure-sdk-for-node/tree/bf6473eae7faca1ca1cf1375ee53c6fc214ca1b1/runtime/ms-rest-azure#using-the-generic-authenticated-azureserviceclient-to-make-custom-requests-to-azure
-    const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
+        items.forEach(item => {
+            const itemAbsPath = `${dirPath}/${item}`;
+            const itemStat = fs.statSync(itemAbsPath);
 
-    let policyContentAsString = fs.readFileSync('/policy.xml','utf8');
-    let options = {
-        method: 'PUT',
-        url: url.href,
-        body:{
-            properties: {
-                policyContent: policyContentAsString
+            if (itemStat.isDirectory()) {
+                promises.push(
+                    processApiOperationDir(credentials, apiId, itemAbsPath)
+                );
+            } else if (item === POLICY_FILENAME) {
+                promises.push(
+                    apiMgmtApi.setPolicy(credentials, apiId, fs.readFileSync(itemAbsPath, 'utf8'))
+                );
             }
-        }
-    };
-
-    const result = await azureServiceClient.sendRequest(options);
-
-    if (result.error){
-        if (result.error.code === 'MissingSubscriptionRegistration' && createOrUpdateAttempts === 1) {
-            // provider not registered; register & retry create, but only once
-            console.log("Microsoft.ApiManagement provider not registered for subscription");
-            await registerProvider(credentials);
-            await createOrUpdate(credentials);
-            return;
-        }
-        throw new Error(JSON.stringify(result.error));
+        });
     }
-    console.log('create/update api management policy successful');
+
+    return Promise.all(promises);
 };
 
-login().then(createOrUpdate).catch(error => {
-    console.log(error);
-    process.exit(1)
-});
+/**
+ * Processes the /policies/apis dir
+ * @param credentials
+ * @param dirPath
+ * @returns {Promise.<*>}
+ */
+const processApisDir = async (credentials, dirPath) => {
+    const promises = [];
+    fs.readdirSync(dirPath).forEach(item => {
+        const itemAbsPath = `${dirPath}/${item}`;
+        const itemStat = fs.statSync(itemAbsPath);
+
+        if (itemStat.isDirectory()) {
+            promises.push(
+                processApiDir(credentials, itemAbsPath)
+            );
+        }
+    });
+    return Promise.all(promises);
+};
+
+/**
+ * Processes a /policies/products/{product-name} dir
+ * @param credentials
+ * @param dirPath
+ * @returns {Promise.<*>}
+ */
+const processProductDir = async (credentials, dirPath) => {
+    const policyAbsPath = `${dirPath}/${POLICY_FILENAME}`;
+    if (fs.existsSync(policyAbsPath)) {
+        return apiMgmtProduct
+            .getIdByName(credentials, path.basename(dirPath))
+            .then(apiId =>
+                apiMgmtProduct.setPolicy(credentials, apiId, fs.readFileSync(policyAbsPath, 'utf8'))
+            );
+    }
+    return Promise.resolve();
+};
+
+/**
+ * Processes the /policies/products dir
+ * @param credentials
+ * @param dirPath
+ * @returns {Promise.<*>}
+ */
+const processProductsDir = async (credentials, dirPath) => {
+    const promises = [];
+    fs.readdirSync(dirPath).forEach(item => {
+        const itemAbsPath = `${dirPath}/${item}`;
+        const itemStat = fs.statSync(itemAbsPath);
+
+        if (itemStat.isDirectory()) {
+            promises.push(
+                processProductDir(credentials, itemAbsPath)
+            );
+        }
+    });
+    return Promise.all(promises);
+};
+
+/**
+ * Sets policies by walking the policies dir tree, conventionally applying discovered policy.xml files
+ * @param credentials
+ * @returns {Promise.<*>}
+ */
+const setPolicies = async (credentials) => {
+    const promises = [];
+    const dirPath = '/policies';
+    fs.readdirSync(dirPath).forEach(item => {
+        const itemAbsPath = `${dirPath}/${item}`;
+
+        switch (item) {
+            case 'apis':
+                promises.push(processApisDir(credentials, itemAbsPath));
+                break;
+            case 'products':
+                promises.push(processProductsDir(credentials, itemAbsPath));
+                break;
+            case POLICY_FILENAME:
+                promises.push(apiMgmt.setPolicy(fs.readFileSync(itemAbsPath, 'utf8')));
+                break;
+        }
+    });
+    return Promise.all(promises);
+};
+
+login()
+    .then(credentials => setPolicies(credentials))
+    .catch(error => {
+        console.log(error);
+        process.exit(1)
+    });
