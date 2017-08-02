@@ -3,14 +3,14 @@ const {URL} = require('url');
 
 class ApiMgmtProduct {
 
-    async setPolicy(credentials, productId, policyContent) {
+    async setPolicy(credentials, productRef, policyContent) {
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
             `resourceGroups/${process.env.resourceGroup}/` +
             'providers/Microsoft.ApiManagement/' +
             `service/${process.env.apiManagementServiceName}/` +
-            `products/${productId}/` +
+            `products/${productRef.id}/` +
             `policies/policy` +
             '?api-version=2017-03-01');
 
@@ -29,9 +29,9 @@ class ApiMgmtProduct {
         const result = await azureServiceClient.sendRequest(options);
 
         if (result.error) {
-            throw new Error(`error setting policy for productId: '${productId}'; error was: ${JSON.stringify(result.error)}`);
+            throw new Error(`error setting policy for product '${productRef.name}'; error was: ${JSON.stringify(result.error)}`);
         }
-        console.log(`set policy for productId: '${productId}' successfully`);
+        console.log(`set policy for product '${productRef.name}' successfully`);
     };
 
     async getIdByName(credentials, productName){
@@ -67,7 +67,7 @@ class ApiMgmtProduct {
         }
 
         if (!operationId){
-            throw new Error(`no Product found w/ displayName: '${productName}'`);
+            throw new Error(`no product found w/ displayName: '${productName}'`);
         }
 
         return operationId;
