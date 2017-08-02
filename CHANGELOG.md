@@ -7,3 +7,8 @@ All notable changes will be documented in this file in accordance with
 
 ## \[1.0.0] - 2017-07-21
 
+## \[2.0.0] - 2017-08-01
+
+### Changed
+- Rework to set policies from policy.xml files supplied via a conventional dir structure
+

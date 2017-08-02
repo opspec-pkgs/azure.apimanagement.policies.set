@@ -1,5 +1,5 @@
-name: github.com/opspec-pkgs/azure.apimanagement.policy.set
-description: sets an azure api management global policy
+name: github.com/opspec-pkgs/azure.apimanagement.policies.set
+description: sets azure api management policies
 inputs:
   subscriptionId:
     string:
@@ -26,24 +26,33 @@ inputs:
     string:
       constraints: { minLength: 1 }
       description: name of the api management service
-  policyId:
-    string:
-      constraints: { minLength: 1 }
-      description: the identifier of the policy
-  policyFile:
-    file:
-      description: full file path to policy xml 
+  policies:
+    dir:
+      description: |
+        policies to set provided in the form of the following conventional dir structure:
+          |--
+            |-- policy.xml # global policy
+            |-- apis
+              |-- {api-name} # repeat as needed
+                |-- policy.xml
+                |-- {operation-name} # repeat as needed
+                  |-- policy.xml
+            |-- products
+              |-- {product-name} # repeat as needed
+                |-- policy.xml
+        see [example](example)
   loginType:
     string:
       constraints: { enum: [user, sp]}
       description: type of login; 'user' (default) or 'sp' for service principal
       default: user
-version: 1.0.0
+version: 2.0.0
 run:
   container:
-    image: { ref: 'opspecpkgs/azure.apimanagement.policy.set:1.0.0' }
-    cmd: [node, /index.js]
-    files: { /index.js, /policy.xml: policyFile }
+    image: { ref: 'opspecpkgs/azure.apimanagement.policies.set:2.0.0' }
+    cmd: [node, /index.js ]
+    dirs: { /policies: policies }
+    files: { /index.js, /apiMgmt.js, /apiMgmtApi.js, /apiMgmtApiOperation.js, /apiMgmtProduct.js }
     envVars:
       subscriptionId:
       loginId:
@@ -51,5 +60,5 @@ run:
       loginTenantId:
       resourceGroup:
       apiManagementServiceName:
-      policyId:
+      policies:
       loginType:
