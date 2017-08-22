@@ -5,6 +5,11 @@ All notable changes will be documented in this file in accordance with
 
 ## \[Unreleased]
 
+## /[2.0.2] - 2017-08-22
+
+### Fixed
+- Accept input of content type raw (unencoded)
+
 ## /[2.0.1] - 2017-08-02
 
 ### Added
