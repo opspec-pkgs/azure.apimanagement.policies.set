@@ -19,7 +19,9 @@ policies are provided in the form of the following conventional dir structure:
 ```
 see [example](example)
 
+# Known Limitations
 
+global level policy must be valid xml, all other policies can be passed as raw (unencoded) policy
 # Example usage
 
 > note: in examples, VERSION represents a version of the
@@ -49,8 +51,12 @@ op:
     loginTenantId:
     resourceGroup:
     apiManagementServiceName:
+    apiCredentialsKey:
     policies:
     # begin optional args
+    apiCredentialsIdentifier:
+    accessTokenMinutesValid:
+    contentType:
     loginType:
     # end optional args
 ```

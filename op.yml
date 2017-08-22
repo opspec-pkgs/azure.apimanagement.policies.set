@@ -26,6 +26,26 @@ inputs:
     string:
       constraints: { minLength: 1 }
       description: name of the api management service
+  apiCredentialsIdentifier:
+    string:
+      constraints: { minLength: 1 }
+      description: the identifier for API management under security > credentials
+      default: integration
+  apiCredentialsKey:
+    string:
+      constraints: { minLength: 1 }
+      description: api management primary or secondary key under security > credentials
+      isSecret: true
+  accessTokenMinutesValid:
+    number:
+      constraints: { minimum: 1, format: integer }
+      description: the number of minutes the access token is valid
+      default: 60
+  contentType:
+    string:
+      constraints: { minLength: 1 }
+      description: determins XML-escaped or raw policy format
+      default: 'application/vnd.ms-azure-apim.policy.raw+xml'
   policies:
     dir:
       description: |
@@ -46,19 +66,31 @@ inputs:
       constraints: { enum: [user, sp]}
       description: type of login; 'user' (default) or 'sp' for service principal
       default: user
-version: 2.0.1
+version: 2.0.3
 run:
-  container:
-    image: { ref: 'opspecpkgs/azure.apimanagement.policies.set:2.0.0' }
-    cmd: [node, /index.js ]
-    dirs: { /policies: policies }
-    files: { /index.js, /apiMgmt.js, /apiMgmtApi.js, /apiMgmtApiOperation.js, /apiMgmtProduct.js }
-    envVars:
-      subscriptionId:
-      loginId:
-      loginSecret:
-      loginTenantId:
-      resourceGroup:
-      apiManagementServiceName:
-      policies:
-      loginType:
+  serial:
+    - op:
+        pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.sas-token.generate#1.0.0 }
+        inputs: 
+          id: $(apiCredentialsIdentifier)
+          key: $(apiCredentialsKey)
+          minutesValid: $(accessTokenMinutesValid)
+        outputs:
+          sasToken:
+    - container:
+        image: { ref: 'opspecpkgs/azure.apimanagement.policies.set:2.0.3' }
+        cmd: [node, /index.js ]
+        dirs: { /policies: policies }
+        files: { /index.js, /apiMgmt.js, /apiMgmtApi.js, /apiMgmtApiOperation.js, /apiMgmtProduct.js }
+        envVars:
+          subscriptionId:
+          loginId:
+          loginSecret:
+          loginTenantId:
+          resourceGroup:
+          apiManagementServiceName:
+          contentType:
+          policies:
+          loginType:
+          sasToken:
+          

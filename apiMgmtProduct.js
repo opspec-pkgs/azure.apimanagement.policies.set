@@ -1,36 +1,35 @@
 const msRestAzure = require('ms-rest-azure');
 const {URL} = require('url');
+const axios = require('axios');
 
 class ApiMgmtProduct {
 
     async setPolicy(credentials, productRef, policyContent) {
         const url = new URL(
-            'https://management.azure.com/' +
-            `subscriptions/${process.env.subscriptionId}/` +
-            `resourceGroups/${process.env.resourceGroup}/` +
-            'providers/Microsoft.ApiManagement/' +
-            `service/${process.env.apiManagementServiceName}/` +
+            `https://${process.env.apiManagementServiceName}.management.azure-api.net/` +
             `products/${productRef.id}/` +
-            `policies/policy` +
+            `policy` +
             '?api-version=2017-03-01');
 
         const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
 
-        let options = {
+        const headers = {};
+        headers['Authorization'] = `${process.env.sasToken}`;
+        headers['Content-Type'] = `${process.env.contentType}`;
+        headers['If-Match'] = '*';
+		
+		let options = {
             method: 'PUT',
             url: url.href,
-            body: {
-                properties: {
-                    policyContent
-                }
-            }
+			headers,
+            data: policyContent
         };
 
-        const result = await azureServiceClient.sendRequest(options);
+        const result = await axios(options)
+        .catch(function (error) {
+            throw new Error(`error setting policy for product '${productRef.name}'; error was: ${error.response.statusText}`);
+        });
 
-        if (result.error) {
-            throw new Error(`error setting policy for product '${productRef.name}'; error was: ${JSON.stringify(result.error)}`);
-        }
         console.log(`set policy for product '${productRef.name}' successfully`);
     };
 
