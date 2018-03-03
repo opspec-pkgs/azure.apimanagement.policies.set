@@ -1,49 +1,34 @@
 [![Build Status](https://travis-ci.org/opspec-pkgs/azure.apimanagement.policies.set.svg?branch=master)](https://travis-ci.org/opspec-pkgs/azure.apimanagement.policies.set)
 
+<img src="icon.svg" alt="icon" height="100px">
+
 # Problem statement
 
-sets azure api management policies.
+sets azure api management policies
 
-policies are provided in the form of the following conventional dir structure:
-```text
-  |--
-    |-- policy.xml # global policy
-    |-- apis
-      |-- {api-name} # repeat as needed
-        |-- policy.xml
-        |-- {operation-name} # repeat as needed
-          |-- policy.xml
-    |-- products
-      |-- {product-name} # repeat as needed
-        |-- policy.xml
-```
-see [example](example)
+# Format
 
-# Known Limitations
+this version of the pkg is in [![opspec 0.1.5](https://img.shields.io/badge/opspec-0.1.5-brightgreen.svg?colorA=6b6b6b&colorB=fc16be)](https://opspec.io/0.1.5/packages.html) format
 
-global level policy must be valid xml, all other policies can be passed as raw (unencoded) policy
 # Example usage
 
-> note: in examples, VERSION represents a version of the
-> azure.apimanagement.policies.set pkg
-
-## install
+## Install
 
 ```shell
-opctl pkg install github.com/opspec-pkgs/azure.apimanagement.policies.set#VERSION
+opctl pkg install github.com/opspec-pkgs/azure.apimanagement.policies.set#2.0.4
 ```
 
-## run
+## Run
 
 ```
-opctl run github.com/opspec-pkgs/azure.apimanagement.policies.set#VERSION
+opctl run github.com/opspec-pkgs/azure.apimanagement.policies.set#2.0.4
 ```
 
-## compose
+## Compose
 
 ```yaml
 op:
-  pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.policies.set#VERSION }
+  pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.policies.set#2.0.4 }
   inputs:
     subscriptionId:
     loginId:
@@ -53,12 +38,11 @@ op:
     apiManagementServiceName:
     apiCredentialsKey:
     policies:
-    # begin optional args
+    # params w/ default
     apiCredentialsIdentifier:
     accessTokenMinutesValid:
     contentType:
     loginType:
-    # end optional args
 ```
 
 # Support
