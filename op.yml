@@ -80,7 +80,7 @@ run:
     - container:
         image: { ref: 'opspecpkgs/azure.apimanagement.policies.set:2.0.3' }
         cmd: [node, /index.js ]
-        dirs: { /policies: policies }
+        dirs: { /policies: $(policies) }
         files: { /index.js, /apiMgmt.js, /apiMgmtApi.js, /apiMgmtApiOperation.js, /apiMgmtProduct.js }
         envVars:
           subscriptionId:
