@@ -70,7 +70,7 @@ version: 2.1.0
 run:
   serial:
     - op:
-        pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.sas-token.generate#1.0.0 }
+        pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.sas-token.generate#1.1.0 }
         inputs: 
           id: $(apiCredentialsIdentifier)
           key: $(apiCredentialsKey)
