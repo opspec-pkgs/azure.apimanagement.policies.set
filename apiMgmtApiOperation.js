@@ -1,6 +1,9 @@
 const msRestAzure = require('ms-rest-azure');
-const {URL} = require('url');
+const { URL } = require('url');
 const axios = require('axios');
+
+// Remove the default accept headers. Microsoft is rejecting the request with 406
+delete axios.defaults.headers.common.Accept;
 
 class ApiMgmtApiOperation {
     async setPolicy(credentials, apiRef, operationRef, policyContent) {
@@ -17,23 +20,23 @@ class ApiMgmtApiOperation {
         headers['Authorization'] = `${process.env.sasToken}`;
         headers['Content-Type'] = `${process.env.contentType}`;
         headers['If-Match'] = '*';
-		
-		let options = {
+
+        let options = {
             method: 'PUT',
             url: url.href,
-			headers,
+            headers,
             data: policyContent
         };
 
         const result = await axios(options)
-        .catch(function (error) {
-            throw new Error(`error setting policy for operation '${operationRef.name}' of api '${apiRef.name}'; error was: ${error.response.statusText}`);
-        });
+            .catch(function (error) {
+                throw new Error(`error setting policy for operation '${operationRef.name}' of api '${apiRef.name}'; error was: ${error.response.statusText}`);
+            });
 
         console.log(`set policy for operation '${operationRef.name}' of api '${apiRef.name}' successfully`);
     };
 
-    async getIdByName(credentials, apiRef, operationName){
+    async getIdByName(credentials, apiRef, operationName) {
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
@@ -58,7 +61,7 @@ class ApiMgmtApiOperation {
         }
 
         let operationId;
-        for (let i = 0; i < result.value.length; i++ ) {
+        for (let i = 0; i < result.value.length; i++) {
             const item = result.value[i];
             if (item.properties.displayName === operationName) {
                 operationId = item.name;
@@ -66,7 +69,7 @@ class ApiMgmtApiOperation {
             }
         }
 
-        if (!operationId){
+        if (!operationId) {
             throw new Error(`no operation found w/ displayName: '${operationName}' in api '${apiRef.name}'`);
         }
 
