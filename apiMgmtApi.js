@@ -24,6 +24,9 @@ class ApiMgmtApi {
             data: policyContent
         };
 
+        // Remove the default accept headers. Microsoft is rejecting the request with 406
+        delete axios.defaults.headers.common.accept;
+
         const result = await axios(options)
         // look up what axios considers http errors
         .catch(function (error) {
