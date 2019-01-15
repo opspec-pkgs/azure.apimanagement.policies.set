@@ -91,7 +91,6 @@ const processApiDir = async (credentials, dirPath) => {
             } else if (item === POLICY_FILENAME) {
                 promises.push(
                     apiMgmtApi.setPolicy(
-                        credentials,
                         apiRef,
                         fs.readFileSync(itemAbsPath, 'utf8')
                     )

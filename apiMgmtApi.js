@@ -1,34 +1,36 @@
 const msRestAzure = require('ms-rest-azure');
-const {URL} = require('url');
+const { URL } = require('url');
 const axios = require('axios');
 
+// Remove the default accept headers. Microsoft is rejecting the request with 406
+delete axios.defaults.headers.common.Accept;
+
 class ApiMgmtApi {
-    async setPolicy(credentials, apiRef, policyContent) {
+    async setPolicy(apiRef, policyContent) {
         const url = new URL(
             `https://${process.env.apiManagementServiceName}.management.azure-api.net/` +
             `apis/${apiRef.id}/` +
             `policy` +
             '?api-version=2017-03-01');
-        
-        const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
 
         const headers = {};
         headers['Authorization'] = `${process.env.sasToken}`;
         headers['Content-Type'] = `${process.env.contentType}`;
         headers['If-Match'] = '*';
-		
-		let options = {
+
+        const options = {
             method: 'PUT',
             url: url.href,
-			headers,
+            headers,
             data: policyContent
         };
 
+
         const result = await axios(options)
-        // look up what axios considers http errors
-        .catch(function (error) {
-            throw new Error(`error setting policy for api '${apiRef.name}'; error was: ${error.response.statusText}`);
-        });
+            // look up what axios considers http errors
+            .catch(function (error) {
+                throw new Error(`error setting policy for api '${apiRef.name}'; error was: ${error.response.statusText}`);
+            });
 
         console.log(`set policy for api '${apiRef.name}' successfully`);
     };
@@ -46,7 +48,7 @@ class ApiMgmtApi {
 
         const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
 
-        let options = {
+        const options = {
             method: 'GET',
             url: url.href,
         };

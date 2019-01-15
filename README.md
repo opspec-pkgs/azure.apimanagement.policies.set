@@ -15,20 +15,20 @@ the op uses [![opspec 0.1.5](https://img.shields.io/badge/opspec-0.1.5-brightgre
 ## Install
 
 ```shell
-opctl op install github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.0
+opctl op install github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.1
 ```
 
 ## Run
 
 ```
-opctl run github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.0
+opctl run github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.1
 ```
 
 ## Compose
 
 ```yaml
 op:
-  ref: github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.0
+  ref: github.com/opspec-pkgs/azure.apimanagement.policies.set#2.1.1
   inputs:
     apiCredentialsKey:
     apiManagementServiceName:

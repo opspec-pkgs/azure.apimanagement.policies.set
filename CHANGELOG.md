@@ -5,6 +5,11 @@ All notable changes will be documented in this file in accordance with
 
 ## \[Unreleased]
 
+## /[2.1.1] - 2019-01-14
+
+### Fixed
+- [Set policies fails with 'Not Acceptable'](https://github.com/opspec-pkgs/azure.apimanagement.policies.set/pull/9)
+
 ## \[2.1.0] - 2018-03-07
 
 ### Added
