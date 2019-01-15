@@ -1,6 +1,9 @@
 const msRestAzure = require('ms-rest-azure');
-const {URL} = require('url');
+const { URL } = require('url');
 const axios = require('axios');
+
+// Remove the default accept headers. Microsoft is rejecting the request with 406
+delete axios.defaults.headers.common.Accept;
 
 class ApiMgmtProduct {
 
@@ -17,23 +20,23 @@ class ApiMgmtProduct {
         headers['Authorization'] = `${process.env.sasToken}`;
         headers['Content-Type'] = `${process.env.contentType}`;
         headers['If-Match'] = '*';
-		
-		let options = {
+
+        let options = {
             method: 'PUT',
             url: url.href,
-			headers,
+            headers,
             data: policyContent
         };
 
         const result = await axios(options)
-        .catch(function (error) {
-            throw new Error(`error setting policy for product '${productRef.name}'; error was: ${error.response.statusText}`);
-        });
+            .catch(function (error) {
+                throw new Error(`error setting policy for product '${productRef.name}'; error was: ${error.response.statusText}`);
+            });
 
         console.log(`set policy for product '${productRef.name}' successfully`);
     };
 
-    async getIdByName(credentials, productName){
+    async getIdByName(credentials, productName) {
         const url = new URL(
             'https://management.azure.com/' +
             `subscriptions/${process.env.subscriptionId}/` +
@@ -57,7 +60,7 @@ class ApiMgmtProduct {
         }
 
         let operationId;
-        for (let i = 0; i < result.value.length; i++ ) {
+        for (let i = 0; i < result.value.length; i++) {
             const item = result.value[i];
             if (item.properties.displayName === productName) {
                 operationId = item.name;
@@ -65,7 +68,7 @@ class ApiMgmtProduct {
             }
         }
 
-        if (!operationId){
+        if (!operationId) {
             throw new Error(`no product found w/ displayName: '${productName}'`);
         }
 
