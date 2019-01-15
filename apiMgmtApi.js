@@ -6,14 +6,12 @@ const axios = require('axios');
 delete axios.defaults.headers.common.Accept;
 
 class ApiMgmtApi {
-    async setPolicy(credentials, apiRef, policyContent) {
+    async setPolicy(apiRef, policyContent) {
         const url = new URL(
             `https://${process.env.apiManagementServiceName}.management.azure-api.net/` +
             `apis/${apiRef.id}/` +
             `policy` +
             '?api-version=2017-03-01');
-
-        const azureServiceClient = new msRestAzure.AzureServiceClient(credentials);
 
         const headers = {};
         headers['Authorization'] = `${process.env.sasToken}`;
