@@ -66,11 +66,11 @@ inputs:
       constraints: { enum: [user, sp]}
       description: type of login; 'user' (default) or 'sp' for service principal
       default: user
-version: 2.1.1
+version: 3.0.0
 run:
   serial:
     - op:
-        pkg: { ref: github.com/opspec-pkgs/azure.apimanagement.sas-token.generate#1.1.0 }
+        ref: github.com/opspec-pkgs/azure.apimanagement.sas-token.generate#1.1.0
         inputs: 
           id: $(apiCredentialsIdentifier)
           key: $(apiCredentialsKey)
@@ -78,7 +78,7 @@ run:
         outputs:
           sasToken:
     - container:
-        image: { ref: 'opspecpkgs/azure.apimanagement.policies.set:2.1.1' }
+        image: { ref: 'ghcr.io/opspec-pkgs/azure.apimanagement.policies.set:3.0.0' }
         cmd: [node, /index.js ]
         dirs:
           /policies: $(policies)
